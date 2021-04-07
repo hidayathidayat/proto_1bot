@@ -146,7 +146,8 @@ def end(update: Update, _: CallbackContext) -> int:
 
 def main() -> None:
     # Create the Updater and pass it your bot's token.
-    updater = environ['TOKEN']
+    # updater = environ['TOKEN']
+    updater = Updater("1649786476:AAHhPUWhXhZ0zsgkkkoW0xWMBbdUsCc3KuU")
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
