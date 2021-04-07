@@ -1,30 +1,33 @@
 from os import environ
 import logging
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Update,
+)
 from telegram.ext import (
     Updater,
     CommandHandler,
     CallbackQueryHandler,
     ConversationHandler,
     CallbackContext,
+    MessageHandler,
+    Filters,
 )
 
 # Enable logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
 )
-
 logger = logging.getLogger(__name__)
 
 
-def end(update: Update, _: CallbackContext) -> int:
-    query = update.callback_query
-    query.answer()
-    query.edit_message_text(text="See you next time!")
+def start(update: Update, _: CallbackContext) -> int:
+    update.message.reply_text("Silahkan liat /menu yang tersedia")
     return ConversationHandler.END
 
 
-def start(update: Update, _: CallbackContext) -> int:
+def menu(update: Update, _: CallbackContext) -> int:
     user = update.message.from_user
     logger.info(f"User {user.first_name} started the conversation.")
     keyboard = [
@@ -66,7 +69,7 @@ def laporanPerformansi(update: Update, _: CallbackContext) -> int:
     return 1
 
 
-def infoSN(update: Update, _: CallbackContext) -> int:
+def infoSN(update: Update, _: CallbackContext) -> str:
     query = update.callback_query
     query.answer()
     keyboard = [
@@ -77,7 +80,19 @@ def infoSN(update: Update, _: CallbackContext) -> int:
     query.edit_message_text(
         text="Inputkan SN dengan awalan ZTEG / ALCL / HWTC / FHTT", reply_markup=reply_markup
     )
-    return 2
+    return 'responInfoSN'
+
+
+def responInfoSN(update: Update, _: CallbackContext) -> None:
+    sn = update.message.text
+    if len(sn) >= 12:
+        # find info berdasarkan sn
+        update.message.reply_text(
+            f'Data Teknis {sn.upper()} yaitu (some info)'
+        )
+        return ConversationHandler.END
+    elif len(sn) < 12:
+        update.message.reply_text('Cek kembali Nomor SN, minimal 12 karakter')
 
 
 def ukurKualitasJaringan(update: Update, _: CallbackContext) -> int:
@@ -91,7 +106,30 @@ def ukurKualitasJaringan(update: Update, _: CallbackContext) -> int:
     query.edit_message_text(
         text="Inputkan No. Telp atau Inet", reply_markup=reply_markup
     )
-    return 2
+    return 'responukurKualitasJaringan'
+
+
+def responukurKualitasJaringan(update: Update, _: CallbackContext) -> None:
+    telponInet = update.message.text
+    if len(telponInet) >= 5:
+        # find info berdasarkan sn
+        update.message.reply_text(
+            'Output dari API : \n'
+            'Nama : \n'
+            'Hostname : \n'
+            'IP Address : \n'
+            'Shelf : \n'
+            'Slot : \n'
+            'Port : \n'
+            'Onu : \n'
+            'Serial Number : \n'
+            'Status Operasi : \n'
+            'Onu RX Power : \n'
+            'OLT RX Power: \n'
+        )
+        return ConversationHandler.END
+    elif len(telponInet) < 5:
+        update.message.reply_text('Cek kembali Nomor POTS, minimal 5 angka')
 
 
 def deteksiNewSerialNumber(update: Update, _: CallbackContext) -> int:
@@ -105,7 +143,19 @@ def deteksiNewSerialNumber(update: Update, _: CallbackContext) -> int:
     query.edit_message_text(
         text="Inputkan SN dengan awalan ZTEG / ALCL / HWTC / FHTT", reply_markup=reply_markup
     )
-    return 2
+    return 'respondeteksiNewSerialNumber'
+
+
+def respondeteksiNewSerialNumber(update: Update, _: CallbackContext) -> None:
+    sn = update.message.text
+    if len(sn) >= 5:
+        # find info berdasarkan sn
+        update.message.reply_text(
+            f'Hasil temuan {sn} adalah (data)'
+        )
+        return ConversationHandler.END
+    elif len(sn) < 5:
+        update.message.reply_text(' Cek kembali Nomor SN minimal 5 karakter terakhir')
 
 
 def infoVlanByIpaddress(update: Update, _: CallbackContext) -> int:
@@ -117,9 +167,19 @@ def infoVlanByIpaddress(update: Update, _: CallbackContext) -> int:
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     query.edit_message_text(
-        text="Inputkan IPAddress", reply_markup=reply_markup
+        text="Inputkan IP Address", reply_markup=reply_markup
     )
-    return 2
+    return 'responinfoVlanByIpaddress'
+
+
+def responinfoVlanByIpaddress(update: Update, _: CallbackContext) -> None:
+    ip = update.message.text
+    # find info berdasarkan sn
+    update.message.reply_text(
+        f'Your IP Address : {ip} \n'
+        'Info : (some info)'
+    )
+    return ConversationHandler.END
 
 
 def mainMenu(update: Update, _: CallbackContext) -> int:
@@ -141,7 +201,7 @@ def main() -> None:
     dispatcher = updater.dispatcher
 
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
+        entry_points=[CommandHandler('menu', menu)],
         states={
             0: [
                 CallbackQueryHandler(infoPelanggan, pattern='^infoPelanggan$'),
@@ -154,16 +214,32 @@ def main() -> None:
                 CallbackQueryHandler(infoVlanByIpaddress, pattern='^infoVlanByIpaddress$'),
                 CallbackQueryHandler(mainMenu, pattern='^mainMenu$'),
             ],
-            2: [
+            'responInfoSN': [
+                MessageHandler(Filters.text & ~Filters.command, responInfoSN),
                 CallbackQueryHandler(infoPelanggan, pattern='^infoPelanggan$'),
                 CallbackQueryHandler(mainMenu, pattern='^mainMenu$'),
             ],
-
+            'responukurKualitasJaringan': [
+                MessageHandler(Filters.text & ~Filters.command, responukurKualitasJaringan),
+                CallbackQueryHandler(infoPelanggan, pattern='^infoPelanggan$'),
+                CallbackQueryHandler(mainMenu, pattern='^mainMenu$'),
+            ],
+            'respondeteksiNewSerialNumber': [
+                MessageHandler(Filters.text & ~Filters.command, respondeteksiNewSerialNumber),
+                CallbackQueryHandler(infoPelanggan, pattern='^infoPelanggan$'),
+                CallbackQueryHandler(mainMenu, pattern='^mainMenu$'),
+            ],
+            'responinfoVlanByIpaddress': [
+                MessageHandler(Filters.text & ~Filters.command, responinfoVlanByIpaddress),
+                CallbackQueryHandler(infoPelanggan, pattern='^infoPelanggan$'),
+                CallbackQueryHandler(mainMenu, pattern='^mainMenu$'),
+            ],
         },
-        fallbacks=[CommandHandler('start', start)],
+        fallbacks=[CommandHandler('menu', menu), CommandHandler('start', start)],
     )
 
     dispatcher.add_handler(conv_handler)
+    dispatcher.add_handler(CommandHandler("start", start))
 
     updater.start_polling()
     updater.idle()
