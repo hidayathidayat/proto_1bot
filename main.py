@@ -197,7 +197,7 @@ def mainMenu(update: Update, _: CallbackContext) -> int:
 
 
 def main() -> None:
-    PORT = environ.get('PORT', '8443')
+    PORT = int(environ.get('PORT', '8443'))
     updater = Updater(environ['TOKEN'])
     dispatcher = updater.dispatcher
 
