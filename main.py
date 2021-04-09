@@ -197,8 +197,6 @@ def mainMenu(update: Update, _: CallbackContext) -> int:
 
 
 def main() -> None:
-    APPNAME = 'proto-1bot'
-    PORT = int('8443')
     updater = Updater(environ['TOKEN'])
     dispatcher = updater.dispatcher
 
@@ -244,13 +242,15 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("start", start))
 
     # updater.start_polling()
+    PORT = int('8443')
+    APPNAME = 'proto-1bot'
     updater.start_webhook(listen='0.0.0.0',
                           port=PORT,
                           url_path=environ['TOKEN'])
     updater.bot.setWebhook(
         "https://{}.herokuapp.com/{}".format(APPNAME, environ['TOKEN'])
     )
-    updater.idle()
+    # updater.idle()
 
 
 if __name__ == '__main__':
