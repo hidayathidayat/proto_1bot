@@ -242,15 +242,14 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("start", start))
 
     # updater.start_polling()
-    PORT = int('8443')
+    PORT = int(environ.get('PORT', '8443'))
+    print(PORT)
     APPNAME = 'proto-1bot'
     updater.start_webhook(listen='0.0.0.0',
                           port=PORT,
-                          url_path=environ['TOKEN'])
-    updater.bot.setWebhook(
-        "https://{}.herokuapp.com/{}".format(APPNAME, environ['TOKEN'])
-    )
-    # updater.idle()
+                          url_path=environ['TOKEN'],
+                          webhook_url=f"https://{APPNAME}.herokuapp.com/{environ['TOKEN']}")
+    updater.idle()
 
 
 if __name__ == '__main__':
