@@ -198,7 +198,7 @@ def mainMenu(update: Update, _: CallbackContext) -> int:
 
 def main() -> None:
     APPNAME = 'proto-1bot'
-    PORT = int(environ.get('PORT', '8443'))
+    PORT = int('8443')
     updater = Updater(environ['TOKEN'])
     dispatcher = updater.dispatcher
 
