@@ -274,8 +274,8 @@ def main():
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(main_handler)
     print('handler was added')
-    app.run(debug=False, port=8443, host='0.0.0.0')
-    print('app was running')
+    # app.run(debug=False, port=8443, host='0.0.0.0')
+    # print('app was running')
     # </Add Handler>================= #
 # </Main>============================================================ #
 
