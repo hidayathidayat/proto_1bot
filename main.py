@@ -13,8 +13,8 @@ from flask import Flask, request, Response
 from webhook import setwebhook, deletewebhook
 
 
-logging.basicConfig(filename='logfile.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
-logger = logging.getLogger()
+# logging.basicConfig(filename='logfile.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
+# logger = logging.getLogger()
 
 TOKEN = environ.get('TOKEN')
 global bot
@@ -32,7 +32,7 @@ def start(update: Update, _: CallbackContext):
 
 def menu(update: Update, _: CallbackContext) -> int:
     user = update.message.from_user
-    logger.info(f"User {user.first_name} started the conversation.")
+    # logger.info(f"User {user.first_name} started the conversation.")
     keyboard = [
         [InlineKeyboardButton("Info Pelanggan", callback_data='infoPelanggan')],
         [InlineKeyboardButton("Laporan Performansi", callback_data='laporanPerformansi')],
@@ -221,14 +221,15 @@ def Telegram_POST():
 
 # <Main>============================================================= #
 def main():
-    print('main is run')
     # Restart Webhook================ #
     deletewebhook(TOKEN)
-    logger.info('Webhook was deleted')
+    # logger.info('Webhook was deleted')
+    print('Webhook was deleted')
     MY_WEB = environ.get('MY_WEB')
     MY_URL = f'https://{MY_WEB}/{TOKEN}'
     setwebhook(token=TOKEN, web_url=MY_URL)
-    logger.info('Webhook was set')
+    # logger.info('Webhook was set')
+    print('Webhook was set')
     # =============================== #
 
     # <Add Handler>================== #
@@ -272,7 +273,9 @@ def main():
 
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(main_handler)
+    print('handler was added')
     app.run(debug=False)
+    print('app was running')
     # </Add Handler>================= #
 # </Main>============================================================ #
 
