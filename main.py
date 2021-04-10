@@ -272,13 +272,7 @@ def main():
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(main_handler)
     # </Add Handler>================= #
-
-    # <Run Flask>==================== #
-    app.run(debug=False)
-    # </Run Flask>=================== #
 # </Main>============================================================ #
 
 
-# if __name__ == '__main__':
-#     main()
 main()
