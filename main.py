@@ -220,6 +220,7 @@ def Telegram_POST():
 
 # <Main>============================================================= #
 def main():
+    print('main is run')
     # Restart Webhook================ #
     deletewebhook(TOKEN)
     logger.info('Webhook was deleted')
