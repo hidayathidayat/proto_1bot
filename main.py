@@ -210,6 +210,7 @@ def index():
 @app.route(f'/{TOKEN}', methods=['POST', 'GET'])
 def Telegram_POST():
     if request.method == 'POST':
+        print('NEW POST')
         update = Update.de_json(request.get_json(force=True), bot)
         dp.process_update(update)
         return Response('POST success', status=200)
