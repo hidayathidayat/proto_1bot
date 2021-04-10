@@ -224,7 +224,8 @@ def main():
     deletewebhook(TOKEN)
     logging.info('Webhook was deleted')
     MY_WEB = environ.get('MY_WEB')
-    setwebhook(token=TOKEN, web_url=f'{MY_WEB}/{TOKEN}')
+    MY_URL = f'https://{MY_WEB}/{TOKEN}'
+    setwebhook(token=TOKEN, web_url=MY_URL)
     logging.info('Webhook was set')
     # =============================== #
 
