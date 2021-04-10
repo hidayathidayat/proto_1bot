@@ -272,6 +272,7 @@ def main():
 
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(main_handler)
+    app.run(debug=False)
     # </Add Handler>================= #
 # </Main>============================================================ #
 
