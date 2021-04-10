@@ -281,3 +281,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+print(f'__name__ :{__name__}')
