@@ -224,8 +224,7 @@ def main():
     deletewebhook(TOKEN)
     logging.info('Webhook was deleted')
     MY_WEB = environ.get('MY_WEB')
-    WEB_URL = f'{MY_WEB}/{TOKEN}'
-    setwebhook(TOKEN, WEB_URL)
+    setwebhook(token=TOKEN, web_url=f'{MY_WEB}/{TOKEN}')
     logging.info('Webhook was set')
     # =============================== #
 
@@ -273,7 +272,7 @@ def main():
     # </Add Handler>================= #
 
     # <Run Flask>==================== #
-    app.run(host='0.0.0.0', port=8443)
+    app.run(host=f'{MY_WEB}', port=8443)
     # </Run Flask>=================== #
 # </Main>============================================================ #
 
