@@ -1,35 +1,38 @@
 from os import environ
 import logging
 from telegram import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    Update,
+    Update, InlineKeyboardButton,
+    InlineKeyboardMarkup, Bot
 )
 from telegram.ext import (
-    Updater,
-    CommandHandler,
-    CallbackQueryHandler,
-    ConversationHandler,
-    CallbackContext,
-    MessageHandler,
-    Filters,
+    CallbackContext, ConversationHandler,
+    CommandHandler, CallbackQueryHandler,
+    MessageHandler, Filters, Dispatcher
 )
-
-# Enable logging
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-)
-logger = logging.getLogger(__name__)
+from flask import Flask, request, Response
+from webhook import setwebhook, deletewebhook
 
 
-def start(update: Update, _: CallbackContext) -> int:
+logging.basicConfig(filename='logfile.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
+
+
+TOKEN = environ.get('TOKEN')
+global bot
+global dp
+bot = Bot(token=TOKEN)
+dp = Dispatcher(bot, None)
+app = Flask(__name__)
+
+
+# <Method>========================================================= #
+def start(update: Update, _: CallbackContext):
     update.message.reply_text("Silahkan liat /menu yang tersedia")
     return ConversationHandler.END
 
 
 def menu(update: Update, _: CallbackContext) -> int:
     user = update.message.from_user
-    logger.info(f"User {user.first_name} started the conversation.")
+    logging.info(f"User {user.first_name} started the conversation.")
     keyboard = [
         [InlineKeyboardButton("Info Pelanggan", callback_data='infoPelanggan')],
         [InlineKeyboardButton("Laporan Performansi", callback_data='laporanPerformansi')],
@@ -83,7 +86,7 @@ def infoSN(update: Update, _: CallbackContext) -> str:
     return 'responInfoSN'
 
 
-def responInfoSN(update: Update, _: CallbackContext) -> None:
+def responInfoSN(update: Update, _: CallbackContext):
     sn = update.message.text
     if len(sn) >= 12:
         # find info berdasarkan sn
@@ -95,7 +98,7 @@ def responInfoSN(update: Update, _: CallbackContext) -> None:
         update.message.reply_text('Cek kembali Nomor SN, minimal 12 karakter')
 
 
-def ukurKualitasJaringan(update: Update, _: CallbackContext) -> int:
+def ukurKualitasJaringan(update: Update, _: CallbackContext) -> str:
     query = update.callback_query
     query.answer()
     keyboard = [
@@ -109,7 +112,7 @@ def ukurKualitasJaringan(update: Update, _: CallbackContext) -> int:
     return 'responukurKualitasJaringan'
 
 
-def responukurKualitasJaringan(update: Update, _: CallbackContext) -> None:
+def responukurKualitasJaringan(update: Update, _: CallbackContext):
     telponInet = update.message.text
     if len(telponInet) >= 5:
         # find info berdasarkan sn
@@ -132,7 +135,7 @@ def responukurKualitasJaringan(update: Update, _: CallbackContext) -> None:
         update.message.reply_text('Cek kembali Nomor POTS, minimal 5 angka')
 
 
-def deteksiNewSerialNumber(update: Update, _: CallbackContext) -> int:
+def deteksiNewSerialNumber(update: Update, _: CallbackContext) -> str:
     query = update.callback_query
     query.answer()
     keyboard = [
@@ -146,7 +149,7 @@ def deteksiNewSerialNumber(update: Update, _: CallbackContext) -> int:
     return 'respondeteksiNewSerialNumber'
 
 
-def respondeteksiNewSerialNumber(update: Update, _: CallbackContext) -> None:
+def respondeteksiNewSerialNumber(update: Update, _: CallbackContext):
     sn = update.message.text
     if len(sn) >= 5:
         # find info berdasarkan sn
@@ -158,7 +161,7 @@ def respondeteksiNewSerialNumber(update: Update, _: CallbackContext) -> None:
         update.message.reply_text(' Cek kembali Nomor SN minimal 5 karakter terakhir')
 
 
-def infoVlanByIpaddress(update: Update, _: CallbackContext) -> int:
+def infoVlanByIpaddress(update: Update, _: CallbackContext) -> str:
     query = update.callback_query
     query.answer()
     keyboard = [
@@ -172,7 +175,7 @@ def infoVlanByIpaddress(update: Update, _: CallbackContext) -> int:
     return 'responinfoVlanByIpaddress'
 
 
-def responinfoVlanByIpaddress(update: Update, _: CallbackContext) -> None:
+def responinfoVlanByIpaddress(update: Update, _: CallbackContext):
     ip = update.message.text
     # find info berdasarkan sn
     update.message.reply_text(
@@ -194,13 +197,40 @@ def mainMenu(update: Update, _: CallbackContext) -> int:
         text="Welcome to Whepi Tools. Please select Whepi Menu", reply_markup=reply_markup
     )
     return 0
+# </Method>========================================================== #
 
 
-def main() -> None:
-    updater = Updater(environ['TOKEN'])
-    dispatcher = updater.dispatcher
+# <Flask Route>====================================================== #
+@app.route('/', methods=['GET'])
+def index():
+    if request.method == 'GET':
+        return 'Server is running'
 
-    conv_handler = ConversationHandler(
+
+@app.route(f'/{TOKEN}', methods=['POST', 'GET'])
+def Telegram_POST():
+    if request.method == 'POST':
+        update = Update.de_json(request.get_json(force=True), bot)
+        dp.process_update(update)
+        return Response('POST success', status=200)
+    elif request.method == 'GET':
+        return 'Server is running'
+# # </Flask Route>===================================================== #
+
+
+# <Main>============================================================= #
+def main():
+    # Restart Webhook================ #
+    deletewebhook(TOKEN)
+    logging.info('Webhook was deleted')
+    MY_WEB = environ.get('MY_WEB')
+    WEB_URL = f'{MY_WEB}/{TOKEN}'
+    setwebhook(TOKEN, WEB_URL)
+    logging.info('Webhook was set')
+    # =============================== #
+
+    # <Add Handler>================== #
+    main_handler = ConversationHandler(
         entry_points=[CommandHandler('menu', menu)],
         states={
             0: [
@@ -238,18 +268,14 @@ def main() -> None:
         fallbacks=[CommandHandler('menu', menu), CommandHandler('start', start)],
     )
 
-    dispatcher.add_handler(conv_handler)
-    dispatcher.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(main_handler)
+    # </Add Handler>================= #
 
-    # updater.start_polling()
-    PORT = int(environ.get('PORT', '8443'))
-    print(PORT)
-    APPNAME = 'proto-1bot'
-    updater.start_webhook(listen='0.0.0.0',
-                          port=PORT,
-                          url_path=environ['TOKEN'],
-                          webhook_url=f"https://{APPNAME}.herokuapp.com/{environ['TOKEN']}")
-    updater.idle()
+    # <Run Flask>==================== #
+    app.run(host='127.0.0.1', port=8443)
+    # </Run Flask>=================== #
+# </Main>============================================================ #
 
 
 if __name__ == '__main__':
