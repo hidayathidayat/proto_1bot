@@ -1,5 +1,5 @@
 from os import environ
-import logging
+# import logging
 from telegram import (
     Update, InlineKeyboardButton,
     InlineKeyboardMarkup, Bot
@@ -274,7 +274,7 @@ def main():
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(main_handler)
     print('handler was added')
-    app.run(debug=False)
+    app.run(debug=False, port=8443)
     print('app was running')
     # </Add Handler>================= #
 # </Main>============================================================ #
